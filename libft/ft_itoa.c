@@ -44,7 +44,6 @@ static char		*ft_makestring(int arraylength, int nbr, char *string)
 char			*ft_itoa(int nbr)
 {
 	char	*string;
-	int		i;
 	int		negative;
 	int		arraylength;
 
@@ -52,7 +51,6 @@ char			*ft_itoa(int nbr)
 		return (ft_strdup("-2147483648"));
 	arraylength = ft_arraylength(nbr);
 	negative = 0;
-	i = 0;
 	if (nbr < 0)
 	{
 		negative = 1;
