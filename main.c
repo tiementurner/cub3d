@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:59 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/08/16 15:36:08 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/11 15:45:40 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,63 +14,34 @@
 
 int	main(int argc, char **argv)
 {
-	mother newgame;
-	int fd;
+	t_mother	newgame;
+	int			fd;
 
-	fd = argc;
+	ft_bzero(&newgame, sizeof(t_mother));
+	valid_input_check(argc, argv, &newgame.map);
 	newgame.map.grid = NULL;
 	fd = open(argv[1], O_RDONLY);
+	if (fd == -1)
+		put_error("Failed to open file.");
 	parse(&newgame.map, fd);
-	initialize(&newgame.player, &newgame.ray, &newgame.map.grid);
-	draw(&newgame);
+	if (newgame.map.textures_parsed != 5)
+		put_error("Invalid amount of textures provided.");
+	if (newgame.map.grid_parsed == 0)
+		put_error("No map found.");
+	check_valid_grid(newgame.map.grid);
+	rotate_grid(&newgame.map);
+	init_sprites(&newgame.map);
+	initialize(&newgame.player, &newgame.ray, newgame.map.grid);
+	flood_fill(&newgame.map, &newgame.player);
+	draw(&newgame, &newgame.mlx, &newgame.mlx2);
 	return (0);
 }
 
-int	print_keycode(int keycode)
+int	close_window(t_mother *game)
 {
-	printf("keycode: %d\n", keycode);
-	return (0);
-}
-
-int	close_window(int keycode, data *win)
-{
-	if (keycode == 65307)
-		mlx_destroy_window(win->mlx, win->win);
-	return (0);
-}
-
-int	move(int keycode, data *new_game)
-{
-	double	rot_speed;
-	double	old_dir_X;
-	double	old_plane_X;
-
-	rot_speed = 0.1;
-	if (keycode == 13)
-		move_up(new_game);
-	if (keycode == 1)
-		move_down(new_game);
-	if (keycode == 2)
-		move_right(new_game);
-	if (keycode == 0)
-		move_left(new_game);
-	if (keycode == 124)
-	{
-		old_dir_X = new_game->dir_X;
-		new_game->dir_X = new_game->dir_X * cos(-rot_speed) - new_game->dir_Y * sin(-rot_speed);
-		new_game->dir_Y = old_dir_X * sin(-rot_speed) + new_game->dir_Y * cos(-rot_speed);
-		old_plane_X = new_game->plane_X;
-		new_game->plane_X = new_game->plane_X * cos(-rot_speed) - new_game->plane_Y * sin(-rot_speed);
-		new_game->plane_Y = old_plane_X * sin(-rot_speed) + new_game->plane_Y * cos(-rot_speed);
-	}
-		if (keycode == 123)
-	{
-		old_dir_X = new_game->dir_X;
-		new_game->dir_X = new_game->dir_X * cos(rot_speed) - new_game->dir_Y * sin(rot_speed);
-		new_game->dir_Y = old_dir_X * sin(rot_speed) + new_game->dir_Y * cos(rot_speed);
-		old_plane_X = new_game->plane_X;
-		new_game->plane_X = new_game->plane_X * cos(rot_speed) - new_game->plane_Y * sin(rot_speed);
-		new_game->plane_Y = old_plane_X * sin(rot_speed) + new_game->plane_Y * cos(rot_speed);
-	}
+	mlx_destroy_image(game->mlx.mlx, game->mlx.img);
+	mlx_destroy_window(game->mlx.mlx, game->mlx.win);
+	free_stuff(&game->map);
+	exit(0);
 	return (0);
 }

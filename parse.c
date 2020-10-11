@@ -6,58 +6,73 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:05 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/08/16 15:35:02 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/09 16:04:54 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "header.h"
 
-void set_map_specs(t_map *new_map, char *line)
+void	set_map_specs(t_map *new_map, char *line)
 {
-	char **seperated_line;
+	char	**seperated_line;
+	int		i;
 
+	i = 0;
 	seperated_line = ft_split(line, ' ');
 	if (ft_strncmp(seperated_line[0], "R", 1) == 0)
 		set_resolution(new_map, seperated_line);
-	else if (ft_strncmp(seperated_line[0], "NO", 1) == 0)
-		new_map->north = seperated_line[1];
-	else if (ft_strncmp(seperated_line[0], "SO", 1) == 0)
-		new_map->south = seperated_line[1];
-	else if (ft_strncmp(seperated_line[0], "WE", 1) == 0)
-		new_map->west = seperated_line[1];
-	else if (ft_strncmp(seperated_line[0], "EA", 1) == 0)
-		new_map->east = seperated_line[1];
-	else if (ft_strncmp(seperated_line[0], "S", 1) == 0)
-		new_map->sprite = seperated_line[1];
-	else if (ft_strncmp(seperated_line[0], "F", 1) == 0)
-		set_floor_ceiling(new_map, seperated_line[1], 'f');
-	else if (ft_strncmp(seperated_line[0], "C", 1) == 0)
-		set_floor_ceiling(new_map, seperated_line[1], 'c');
+	else if (ft_strncmp(seperated_line[0], "NO", 2) == 0)
+		set_tex_path("NO ", line, new_map, &new_map->north);
+	else if (ft_strncmp(seperated_line[0], "SO", 2) == 0)
+		set_tex_path("SO ", line, new_map, &new_map->south);
+	else if (ft_strncmp(seperated_line[0], "WE", 2) == 0)
+		set_tex_path("WE ", line, new_map, &new_map->west);
 	else
-		set_grid(new_map, line);
+	{
+		set_map_specs_second(new_map, line, seperated_line);
+		i = 1;
+	}
+	if (i == 0)
+		free_seperated_line(seperated_line);
 }
 
-void set_floor_ceiling(t_map *new_map, char *rgb, char cf)
+void	set_floor_ceiling(t_map *new_map, char **rgb, char cf)
 {
-	char **color_ints;
+	char	**color_ints;
+	char	*good_rgb;
+	int		i;
 
-	color_ints = ft_split(rgb, ',');
-	if (cf == 'c')
+	i = 0;
+	good_rgb = correct_rgb_values(rgb);
+	color_ints = ft_split(good_rgb, ',');
+	free(good_rgb);
+	while (color_ints[i])
 	{
-		new_map->ceiling_color = ((ft_atoi(color_ints[0]) + 1) *
-		(ft_atoi(color_ints[1]) + 1) * (ft_atoi(color_ints[2]) + 1) * 16 - 16);
+		if ((ft_atoi(color_ints[i]) > 255 || ft_atoi(color_ints[i]) < 0))
+			put_error("Invalid rgb values for floor or ceiling.");
+		i++;
 	}
-	if (cf == 'f')
-	{
-		new_map->floor_color = ((ft_atoi(color_ints[0]) + 1) *
-		(ft_atoi(color_ints[1]) + 1) * (ft_atoi(color_ints[2]) + 1) * 16 - 16);
-	}
+	if (i != 3)
+		put_error("Not enough RGB values for floor or ceiling color");
+	assign_cf_colors(new_map, color_ints, cf);
+	free_seperated_line(color_ints);
 }
 
 void	set_resolution(t_map *new_map, char **res)
 {
-	new_map->width = ft_atoi(res[1]);
-	new_map->height = ft_atoi(res[2]);
+	if (check_res_params(res) != 3)
+		put_error("Resolution not correctly specified.");
+	if (ft_atoi_long(res[1]) <= 0 || ft_atoi_long(res[2]) <= 0)
+		put_error("Resolution size not positive values.");
+	if (ft_atoi_long(res[1]) >= 2147483648)
+		new_map->width = 2147483647;
+	if (ft_atoi_long(res[2]) >= 2147483648)
+		new_map->height = 2147483647;
+	else
+	{
+		new_map->width = ft_atoi_long(res[1]);
+		new_map->height = ft_atoi_long(res[2]);
+	}
 }
 
 void	set_grid(t_map *new_map, char *line)
@@ -69,37 +84,41 @@ void	set_grid(t_map *new_map, char *line)
 	if (!(new_map->grid))
 	{
 		newgrid = (char**)malloc(sizeof(char *) * 2);
+		if (!newgrid)
+			put_error("Malloc error.");
 		newgrid[1] = NULL;
 		newgrid[0] = ft_strdup(line);
 		new_map->grid = newgrid;
 	}
 	else
-	{
-		while (new_map->grid[i] != NULL)
-			i++;
-		newgrid = (char**)malloc(sizeof(char *) * (i + 2));
-		newgrid[i + 1] = NULL;
-		i = 0;
-		while (new_map->grid[i])
-		{
-			newgrid[i] = ft_strdup(new_map->grid[i]);
-			i++;
-		}
-		newgrid[i] = ft_strdup(line);
-		new_map->grid = newgrid;
-	}
+		add_grid_line(new_map, line);
 }
 
 void	parse(t_map *new_map, int fd)
 {
 	char	*line;
 	int		end;
+	int		empty_line;
 
+	new_map->textures_parsed = 0;
+	new_map->grid_parsed = 0;
+	empty_line = 0;
 	end = 1;
 	while (end)
 	{
+		if (new_map->grid_parsed && empty_line)
+			put_error("Empty line detected in map.");
 		end = get_next_line(fd, &line);
 		if (line[0] != '\0')
+		{
+			empty_line = 0;
 			set_map_specs(new_map, line);
+			free(line);
+		}
+		else
+		{
+			empty_line = 1;
+			free(line);
+		}
 	}
 }

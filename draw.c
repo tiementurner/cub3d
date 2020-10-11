@@ -6,61 +6,81 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:59 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/06/16 15:33:47 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/11 15:37:49 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "header.h"
 
-void     draw(t_data *new_game)
+void	draw(t_mother *new_game, t_mlx *mlx, t_mlx *mlx2)
 {
-    new_game->mlx = mlx_init();
-    new_game->win = mlx_new_window(new_game->mlx, new_game->width, new_game->height, "Raycaster");
-    new_game->img = mlx_new_image(new_game->mlx, new_game->width, new_game->height);
-    new_game->addr = mlx_get_data_addr(new_game->img, &new_game->bits_per_pixel, &new_game->line_length, &new_game->endian);
-	mlx_key_hook(new_game->win, print_keycode, new_game->mlx);
-	mlx_hook(new_game->win, 02, 1L<<0, close_window, new_game);
-	mlx_hook(new_game->win, 02, 1L<<0, move, new_game);
-	mlx_loop_hook(new_game->mlx, render, new_game);
-	//render(new_game);
-	printf("%d, %d\n", new_game->width, new_game->height);
-    mlx_loop(new_game->mlx);
+	mlx->mlx = mlx_init();
+	new_game->map.zbuffer = ft_calloc(new_game->map.width, sizeof(double));
+	if (!new_game->map.zbuffer)
+	{
+		free_stuff(&new_game->map);
+		put_error("Malloc error");
+	}
+	check_resolution(new_game, &new_game->map, mlx);
+	mlx->win = mlx_new_window(mlx->mlx, new_game->map.width,
+							new_game->map.height, "Raycaster");
+	mlx->img = mlx_new_image(mlx->mlx, new_game->map.width,
+							new_game->map.height);
+	mlx->addr = mlx_get_data_addr(mlx->img, &mlx->bits_per_pixel,
+								&mlx->line_length, &mlx->endian);
+	mlx2->img = mlx_new_image(mlx->mlx, new_game->map.width,
+								new_game->map.height);
+	mlx2->addr = mlx_get_data_addr(mlx2->img, &mlx2->bits_per_pixel,
+								&mlx2->line_length, &mlx2->endian);
+	new_game->mlx.img_count = 0;
+	load_textures(&new_game->map, new_game->mlx.mlx);
+	load_sprite(&new_game->map.sprite, new_game->mlx.mlx);
+	mlx_hook(mlx->win, 17, 1L << 17, &close_window, new_game);
+	mlx_hook(mlx->win, 02, 1L << 0, &move_hook, new_game);
+	mlx_loop_hook(mlx->mlx, render, new_game);
+	mlx_loop(mlx->mlx);
 }
 
-int render(t_data *new_game)
+int		render(t_mother *new_game)
 {
-	int		x;
-
-	x = 0;
-	while (x < new_game->width)
+	if (new_game->mlx.img_count > 10000)
+		new_game->mlx.img_count = 0;
+	if (new_game->mlx.img_count % 2 == 0)
 	{
-		new_game->camera_X = 2 * x / (double)new_game->width - 1;
-		new_game->raydir_X = new_game->dir_X + new_game->plane_X * new_game->camera_X;
-		new_game->raydir_Y = new_game->dir_Y + new_game->plane_Y * new_game->camera_X;
-
-		new_game->map_X = (int)new_game->player_X;
-		new_game->map_Y = (int)new_game->player_Y;
-
-		new_game->deltaDistX = sqrt(1 + pow(new_game->raydir_Y, 2) / pow(new_game->raydir_X, 2));
-		new_game->deltaDistY = sqrt(1 + pow(new_game->raydir_X, 2) / pow(new_game->raydir_Y, 2));
-		set_distance_to_sides(new_game);
-		send_ray(new_game);
-		if (new_game->side == 0)
-			new_game->perpWallDist = (new_game->map_X - new_game->player_X + (1 - new_game->stepX) / 2) / new_game->raydir_X;
-		else
-			new_game->perpWallDist = (new_game->map_Y - new_game->player_Y + (1 - new_game->stepY) / 2) / new_game->raydir_Y;
-		calculate_ray_length(new_game);
-		draw_ray(new_game, x);
-	  	x++;
+		d_d_a(&new_game->ray, &new_game->player, &new_game->map,
+				&new_game->mlx);
+		mlx_put_image_to_window(new_game->mlx.mlx, new_game->mlx.win,
+										new_game->mlx.img, 0, 0);
 	}
-	mlx_put_image_to_window(new_game->mlx, new_game->win, new_game->img, 0, 0);
+	if (new_game->mlx.img_count % 2 == 1 && new_game->map.bmp == 0)
+	{
+		d_d_a(&new_game->ray, &new_game->player,
+		&new_game->map, &new_game->mlx2);
+		mlx_put_image_to_window(new_game->mlx.mlx, new_game->mlx.win,
+										new_game->mlx2.img, 0, 0);
+	}
+	new_game->mlx.img_count++;
 	return (0);
 }
 
-void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
+void	d_d_a(t_ray *ray, t_player *player, t_map *map, t_mlx *mlx)
 {
-    char    *dst;
-
-    dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
-    *(unsigned int*)dst = color;
+	ray->x = 0;
+	while (ray->x < map->width)
+	{
+		init_ray(ray, player, map);
+		set_distance_to_sides(player, ray);
+		send_ray(ray, map->grid);
+		if (ray->side == 0)
+			ray->perpwalldist = (ray->map_x - player->x +
+			(1 - ray->step_x) / 2) / ray->dir_x;
+		else
+			ray->perpwalldist = (ray->map_y - player->y +
+			(1 - ray->step_y) / 2) / ray->dir_y;
+		calculate_draw_data(ray, player, map->height);
+		draw_ray(ray, map, mlx);
+		map->zbuffer[ray->x] = ray->perpwalldist;
+		ray->x++;
+	}
+	sprites(map, player, ray, mlx);
 }

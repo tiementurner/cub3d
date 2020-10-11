@@ -5,8 +5,8 @@
 /*                                                     +:+                    */
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2019/11/05 10:15:29 by tblanker       #+#    #+#                */
-/*   Updated: 2019/11/20 14:15:06 by tblanker      ########   odam.nl         */
+/*   Created: 2019/11/05 10:15:29 by tblanker      #+#    #+#                 */
+/*   Updated: 2020/10/11 16:14:56 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,5 +56,5 @@ int				ft_atoi(const char *str)
 	}
 	if (temp > result)
 		return (ft_checklongs(sign));
-	return ((int)result * (int)sign);
+	return (result * sign);
 }

@@ -6,90 +6,101 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:59 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/06/17 13:35:18 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/09 17:33:09 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "header.h"
 
-void	set_distance_to_sides(t_data *new_game)
+void	init_ray(t_ray *ray, t_player *player, t_map *map)
 {
-	if (new_game->raydir_X < 0)
+	ray->camera_x = 2 * ray->x / (double)map->width - 1;
+	ray->dir_x = player->dir_x + ray->plane_x * ray->camera_x;
+	ray->dir_y = player->dir_y + ray->plane_y * ray->camera_x;
+	ray->map_x = (int)player->x;
+	ray->map_y = (int)player->y;
+	ray->deltadistx = sqrt(1 + pow(ray->dir_y, 2) / pow(ray->dir_x, 2));
+	ray->deltadisty = sqrt(1 + pow(ray->dir_x, 2) / pow(ray->dir_y, 2));
+}
+
+void	set_distance_to_sides(t_player *player, t_ray *ray)
+{
+	if (ray->dir_x < 0)
 	{
-		new_game->stepX = -1;
-		new_game->sideDistX = (new_game->player_X - new_game->map_X) * new_game->deltaDistX;
+		ray->step_x = -1;
+		ray->sidedistx = (player->x - ray->map_x) * ray->deltadistx;
 	}
 	else
 	{
-		new_game->stepX = 1;
-		new_game->sideDistX = (new_game->map_X + 1.0 - new_game->player_X) * new_game->deltaDistX;
+		ray->step_x = 1;
+		ray->sidedistx = (ray->map_x + 1.0 - player->x) * ray->deltadistx;
 	}
-	if (new_game->raydir_Y < 0)
+	if (ray->dir_y < 0)
 	{
-		new_game->stepY = -1;
-		new_game->sideDistY = (new_game->player_Y - new_game->map_Y) * new_game->deltaDistY;
+		ray->step_y = -1;
+		ray->sidedisty = (player->y - ray->map_y) * ray->deltadisty;
 	}
 	else
 	{
-		new_game->stepY = 1;
-		new_game->sideDistY = (new_game->map_Y + 1.0 - new_game->player_Y) * new_game->deltaDistY;
+		ray->step_y = 1;
+		ray->sidedisty = (ray->map_y + 1.0 - player->y) * ray->deltadisty;
 	}
 }
 
-void	send_ray(t_data *new_game)
+void	send_ray(t_ray *ray, char **grid)
 {
-	new_game->hit = 0;
-	while (new_game->hit == 0)
+	ray->hit = 0;
+	while (ray->hit == 0)
 	{
-		if (new_game->sideDistX < new_game->sideDistY)
+		if (ray->sidedistx < ray->sidedisty)
 		{
-			new_game->sideDistX += new_game->deltaDistX;
-			new_game->map_X += new_game->stepX;
-			new_game->side = 0;
+			ray->sidedistx += ray->deltadistx;
+			ray->map_x += ray->step_x;
+			ray->side = 0;
 		}
 		else
 		{
-			new_game->sideDistY += new_game->deltaDistY;
-			new_game->map_Y += new_game->stepY;
-			new_game->side = 1;
+			ray->sidedisty += ray->deltadisty;
+			ray->map_y += ray->step_y;
+			ray->side = 1;
 		}
-		if (new_game->grid[new_game->map_X][new_game->map_Y] == '1')
-			new_game->hit = 1;
+		if (grid[ray->map_y][ray->map_x] == '1')
+			ray->hit = 1;
 	}
 }
 
-void	calculate_ray_length(t_data *new_game)
+void	calculate_draw_data(t_ray *ray, t_player *player, int height)
 {
-	int h;
-	int lineheight;
-
-	h = new_game->height;
-	lineheight = (int)(h / new_game->perpWallDist);
-	new_game->drawStart = -lineheight / 2 + h / 2;
-	if (new_game->drawStart < 0)
-		new_game->drawStart = 0;
-	new_game->drawEnd = lineheight / 2 + h / 2;
-	if (new_game->drawEnd >= h)
-		new_game->drawEnd = h - 1;
+	ray->lineheight = (int)(height / ray->perpwalldist);
+	ray->drawstart = -ray->lineheight / 2 + height / 2;
+	if (ray->drawstart < 0)
+		ray->drawstart = 0;
+	ray->drawend = ray->lineheight / 2 + height / 2;
+	if (ray->drawend >= height)
+		ray->drawend = height - 1;
+	if (ray->side == 0)
+		ray->wall_x = player->y + ray->perpwalldist * ray->dir_y;
+	else
+		ray->wall_x = player->x + ray->perpwalldist * ray->dir_x;
+	ray->wall_x -= floor(ray->wall_x);
 }
 
-void	draw_ray(t_data *new_game, int x)
+void	draw_ray(t_ray *ray, t_map *map, t_mlx *mlx)
 {
-	int				y;
 	unsigned int	color;
 
-	color = 0xFF00000;
-	if (new_game->side == 1)
-		color = color / 2;
-	y = 0;
-	while (y < new_game->height)
+	ray->y = 0;
+	while (ray->y < map->height)
 	{
-		if (y < new_game->height / 2)
-			my_mlx_pixel_put(new_game, x, y, new_game->ceiling_color);
-		if (y > new_game->height / 2)
-			my_mlx_pixel_put(new_game, x, y, new_game->floor_color);
-		if (y > new_game->drawStart && y < new_game->drawEnd)
-			my_mlx_pixel_put(new_game, x, y, color);
-		y++;
+		if (ray->y < map->height / 2)
+			my_mlx_pixel_put(mlx, ray->x, ray->y, map->ceiling_color);
+		if (ray->y > map->height / 2)
+			my_mlx_pixel_put(mlx, ray->x, ray->y, map->floor_color);
+		if (ray->y >= ray->drawstart && ray->y < ray->drawend)
+		{
+			color = texture_picker(ray, map);
+			my_mlx_pixel_put(mlx, ray->x, ray->y, color);
+		}
+		ray->y++;
 	}
 }

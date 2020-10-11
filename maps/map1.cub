@@ -1,0 +1,18 @@
+R 800 600
+
+WE ./textures/me tal.xpm
+NO ./textures/wood.xpm
+SO ./textures/brick.xpm
+EA ./textures/wall_1.xpm
+S ./textures/barrel.xpm
+
+F 255,255,255
+C 255,255,255
+
+1111111
+10222W1
+1000021
+1011101
+101 101
+101 101
+111 111
