@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:59 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/09 17:33:09 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 16:38:47 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ void	initialize(t_player *player, t_ray *ray, char **grid)
 				set_start_value_ray(x, y, ray, grid);
 				grid[x][y] = '0';
 			}
+			if (grid[x][y] == ' ')
+				grid[x][y] = '0';
 			y++;
 		}
 		x++;

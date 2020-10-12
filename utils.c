@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/10/06 18:25:10 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/11 15:32:57 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 17:56:12 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,25 +64,28 @@ char	*concat_rgb(char **rgb, int k)
 	return (p);
 }
 
-void	check_resolution(t_mother *new_game, t_map *map, t_mlx *mlx)
+void	check_resolution(t_mother *ng, t_map *map, t_mlx *mlx)
 {
 	int	max_height;
 	int	max_width;
 
-	map->bmp_width = map->width;
-	map->bmp_height = map->height;
-	if (new_game->map.bmp != 0)
+	map->bmp_w = map->width;
+	map->bmp_h = map->height;
+	if (map->bmp_w > 16384)
+		map->bmp_w = 16384;
+	if (map->bmp_h > 16384)
+		map->bmp_h = 16384;
+	if (ng->map.bmp != 0)
 	{
-		mlx->win = mlx_new_window(mlx->mlx, new_game->map.bmp_width,
-		new_game->map.bmp_height, "Raycaster");
-		mlx->img = mlx_new_image(mlx->mlx, new_game->map.bmp_width,
-		new_game->map.bmp_height);
+		// mlx->win = mlx_new_window(mlx->mlx, ng->map.bmp_w,
+		// ng->map.bmp_h, "Raycaster");
+		mlx->img = mlx_new_image(mlx->mlx, ng->map.bmp_w, ng->map.bmp_h);
 		mlx->addr = mlx_get_data_addr(mlx->img, &mlx->bits_per_pixel,
 		&mlx->line_length, &mlx->endian);
-		load_textures(&new_game->map, new_game->mlx.mlx);
-		load_sprite(&new_game->map.sprite, new_game->mlx.mlx);
-		render(new_game);
-		save_bmp(&new_game->map, mlx);
+		load_textures(mlx, &ng->map, ng->mlx.mlx);
+		load_sprite(&ng->map.sprite, ng->mlx.mlx);
+		render(ng);
+		save_bmp(&ng->map, mlx);
 	}
 	mlx_get_screen_size(mlx->mlx, &max_width, &max_height);
 	if (map->width > max_width)

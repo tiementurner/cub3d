@@ -6,11 +6,12 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:49:59 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/11 15:37:49 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 17:49:53 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "header.h"
+#include <stdio.h>
 
 void	draw(t_mother *new_game, t_mlx *mlx, t_mlx *mlx2)
 {
@@ -25,24 +26,25 @@ void	draw(t_mother *new_game, t_mlx *mlx, t_mlx *mlx2)
 	mlx->win = mlx_new_window(mlx->mlx, new_game->map.width,
 							new_game->map.height, "Raycaster");
 	mlx->img = mlx_new_image(mlx->mlx, new_game->map.width,
-							new_game->map.height);
+											new_game->map.height);
 	mlx->addr = mlx_get_data_addr(mlx->img, &mlx->bits_per_pixel,
 								&mlx->line_length, &mlx->endian);
 	mlx2->img = mlx_new_image(mlx->mlx, new_game->map.width,
 								new_game->map.height);
 	mlx2->addr = mlx_get_data_addr(mlx2->img, &mlx2->bits_per_pixel,
 								&mlx2->line_length, &mlx2->endian);
-	new_game->mlx.img_count = 0;
-	load_textures(&new_game->map, new_game->mlx.mlx);
+	load_textures(&new_game->mlx, &new_game->map, new_game->mlx.mlx);
 	load_sprite(&new_game->map.sprite, new_game->mlx.mlx);
 	mlx_hook(mlx->win, 17, 1L << 17, &close_window, new_game);
-	mlx_hook(mlx->win, 02, 1L << 0, &move_hook, new_game);
+	mlx_hook(mlx->win, 02, 1L << 0, &key_press_hook, new_game);
+	mlx_hook(mlx->win, 03, 1L << 1, &key_release_hook, new_game);
 	mlx_loop_hook(mlx->mlx, render, new_game);
 	mlx_loop(mlx->mlx);
 }
 
 int		render(t_mother *new_game)
 {
+	move(&new_game->ray, &new_game->player, new_game->map.grid);
 	if (new_game->mlx.img_count > 10000)
 		new_game->mlx.img_count = 0;
 	if (new_game->mlx.img_count % 2 == 0)

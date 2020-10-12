@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/10/09 14:13:01 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/11 15:30:35 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 17:56:30 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	write_bmp_header(t_map *map)
 	unsigned int	offset;
 
 	offset = 54;
-	size = map->bmp_height * map->bmp_width * 4 + offset;
+	size = map->bmp_h * map->bmp_w * 4 + offset;
 	write(map->bmp, "BM", 2);
 	write(map->bmp, &size, 4);
 	write(map->bmp, "\0\0\0\0", 4);
@@ -35,8 +35,8 @@ void	write_bmp_infoheader(t_map *map)
 	plane = 1;
 	bbp = 32;
 	write(map->bmp, &size, 4);
-	write(map->bmp, &map->bmp_width, 4);
-	write(map->bmp, &map->bmp_height, 4);
+	write(map->bmp, &map->bmp_w, 4);
+	write(map->bmp, &map->bmp_h, 4);
 	write(map->bmp, &plane, 2);
 	write(map->bmp, &bbp, 2);
 	write(map->bmp, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 24);
@@ -48,17 +48,13 @@ void	save_bmp(t_map *map, t_mlx *mlx)
 	int				y;
 	unsigned int	color;
 
-	if (map->bmp_width > 16384)
-		map->bmp_width = 16384;
-	if (map->bmp_height > 16384)
-		map->bmp_height = 16384;
 	write_bmp_header(map);
 	write_bmp_infoheader(map);
-	y = map->bmp_height - 1;
+	y = map->bmp_h - 1;
 	while (y >= 0)
 	{
 		x = 0;
-		while (x < map->bmp_width)
+		while (x < map->bmp_w)
 		{
 			color = *((unsigned int*)(mlx->addr + (y * mlx->line_length
 					+ x * (mlx->bits_per_pixel / 8))));

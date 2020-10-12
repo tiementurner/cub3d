@@ -1,6 +1,6 @@
 R 1280 840
 
-NO ./textures/metal.xpm
+NO ./textures/me tal.xpm
 SO ./textures/brick.xpm
 WE ./textures/wood.xpm
 EA ./textures/wall.xpm
@@ -9,9 +9,7 @@ S ./textures/wall.xpm
 F 255,255,0
 C 255,0,0
 
-1111111111
-1000000001
-1010N00001
-1000011111
-100001
-111111
+1111
+1  1
+1 N1
+1111

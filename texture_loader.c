@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/08/28 17:39:22 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/09 16:19:16 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 17:50:52 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,9 @@ static	void	load_east_texture(t_texture *east, void *mlx)
 	free(east->path);
 }
 
-void			load_textures(t_map *map, void *mlx)
+void			load_textures(t_mlx *mlx_struct, t_map *map, void *mlx)
 {
+	mlx_struct->img_count = 0;
 	load_north_texture(&map->north, mlx);
 	load_south_texture(&map->south, mlx);
 	load_west_texture(&map->west, mlx);

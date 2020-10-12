@@ -6,7 +6,7 @@
 #    By: tblanker <tblanker@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2020/03/13 14:27:35 by tblanker      #+#    #+#                  #
-#    Updated: 2020/10/11 16:23:41 by tblanker      ########   odam.nl          #
+#    Updated: 2020/10/12 16:59:34 by tblanker      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ ifeq ($(UNAME_S),Darwin)
     MINILIBX_D = minilibx-mac
 endif
 
-NAME = cub3d
+NAME = cub3D
 
 CC = clang
 
@@ -34,7 +34,7 @@ FILES = main.c parse.c get_next_line/get_next_line.c init.c move.c\
 		get_next_line/get_next_line_utils.c calculate_ray.c draw.c \
 		texture_processing.c texture_loader.c init_sprites.c \
 		sprite_processing.c pixel_functions.c input_check.c error.c \
-		utils.c bmp.c ft_atoi_long.c utils_2.c utils_3.c
+		utils.c bmp.c ft_atoi_long.c utils_2.c utils_3.c keyhandling.c \
 
 OFILES = $(FILES:.c=.o)
 

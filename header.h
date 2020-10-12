@@ -6,7 +6,7 @@
 /*   By: tblanker <tblanker@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/03/13 13:50:58 by tblanker      #+#    #+#                 */
-/*   Updated: 2020/10/11 16:25:43 by tblanker      ########   odam.nl         */
+/*   Updated: 2020/10/12 17:55:21 by tblanker      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,12 @@ typedef	struct	s_ray {
 	int			spriteendx;
 	int			spriteendy;
 	int			stripe;
+	int			walk_forward;
+	int			walk_backward;
+	int			strafe_left;
+	int			strafe_right;
+	int			rotate_left;
+	int			rotate_right;
 }				t_ray;
 
 typedef	struct	s_player
@@ -118,8 +124,8 @@ typedef	struct	s_map
 	int			bmp;
 	int			grid_parsed;
 	int			textures_parsed;
-	int			bmp_width;
-	int			bmp_height;
+	int			bmp_w;
+	int			bmp_h;
 }				t_map;
 
 typedef struct	s_mother
@@ -180,13 +186,14 @@ void			set_start_value_ray(int x, int y, t_ray *ray, char **grid);
 void			set_start_value_player(int x, int y, t_player
 										*player, char **grid);
 
-int				move_hook(int keycode, t_mother *new_game);
-int				move(int keycode, t_ray *ray, t_player *player, char **grid);
-void			walk(int keycode, t_player *player, char **grid);
-void			rotate(int keycode, t_player *player, t_ray *ray);
-void			strafe(int keycode, t_ray *ray, t_player *player, char **grid);
+int				key_press_hook(int keycode, t_mother *new_game);
+int				key_release_hook(int keycode, t_mother *new_game);
+int				move(t_ray *ray, t_player *player, char **grid);
+void			walk(t_ray *ray, t_player *player, char **grid);
+void			rotate(t_player *player, t_ray *ray);
+void			strafe(t_ray *ray, t_player *player, char **grid);
 
-void			load_textures(t_map *map, void *mlx);
+void			load_textures(t_mlx *mlx_struct, t_map *map, void *mlx);
 unsigned	int	texture_picker(t_ray *ray, t_map *map);
 unsigned	int	retrieve_texture_pixel(t_texture *texture, int x, int y);
 
