@@ -12,8 +12,10 @@
 
 #include "header.h"
 
+#ifdef __APPLE__
 int		key_press_hook(int keycode, t_mother *new_game)
 {
+	printf("%d\n", keycode);
 	if (keycode == 13)
 		new_game->ray.walk_forward = 1;
 	if (keycode == 1)
@@ -47,3 +49,43 @@ int		key_release_hook(int keycode, t_mother *new_game)
 		new_game->ray.rotate_right = 0;
 	return (0);
 }
+#endif
+
+#ifdef unix
+int		key_press_hook(int keycode, t_mother *new_game)
+{
+	printf("%d\n", keycode);
+	if (keycode == 119)
+		new_game->ray.walk_forward = 1;
+	if (keycode == 115)
+		new_game->ray.walk_backward = 1;
+	if (keycode == 100)
+		new_game->ray.strafe_right = 1;
+	if (keycode == 97)
+		new_game->ray.strafe_left = 1;
+	if (keycode == 65361)
+		new_game->ray.rotate_left = 1;
+	if (keycode == 65363)
+		new_game->ray.rotate_right = 1;
+	if (keycode == 65307)
+		close_window(new_game);
+	return (0);
+}
+
+int		key_release_hook(int keycode, t_mother *new_game)
+{
+	if (keycode == 119)
+		new_game->ray.walk_forward = 0;
+	if (keycode == 115)
+		new_game->ray.walk_backward = 0;
+	if (keycode == 100)
+		new_game->ray.strafe_right = 0;
+	if (keycode == 97)
+		new_game->ray.strafe_left = 0;
+	if (keycode == 65361)
+		new_game->ray.rotate_left = 0;
+	if (keycode == 65363)
+		new_game->ray.rotate_right = 0;
+	return (0);
+}
+#endif

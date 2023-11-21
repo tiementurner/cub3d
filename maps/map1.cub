@@ -1,4 +1,4 @@
-R 80000 600
+R 80000 6000
 
 WE ./textures/me tal.xpm
 NO ./textures/wood.xpm

@@ -22,6 +22,7 @@
 # include <unistd.h>
 # include <fcntl.h>
 # include <math.h>
+# include <stdio.h>
 
 typedef	struct	s_mlx
 {

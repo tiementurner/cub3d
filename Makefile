@@ -14,13 +14,13 @@ CC_FLAGS = -Wall -Werror -Wextra
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    CC_FLAGS += -D LINUX
+    CC_FLAGS += -D LINUX -O2
     CCL_FLAGS += -lXext -lX11 -lm
     MINILIBX = libmlx.a
     MINILIBX_D = minilibx-linux
 endif
 ifeq ($(UNAME_S),Darwin)
-    CC_FLAGS += -D OSX
+    CC_FLAGS += -D OSX -O2
     CCL_FLAGS += -framework AppKit -framework OpenGL
     MINILIBX = libmlx.dylib
     MINILIBX_D = minilibx-mac
